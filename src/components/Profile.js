@@ -1,30 +1,38 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
+import ProfilePicture from './ProfilePicture';
+import { doSignOut } from '../firebase/auth';
 
 const Profile = () => {
     const { currentUser, logout } = useAuth();
-    const history = useNavigate()
+    const navigate = useNavigate();
 
-    const handleLogout = async () => {
-        try {
-            await logout();
-            // Redirect the user to the login page after logging out
-            history.push('/login');
-        } catch (error) {
-            console.error('Error logging out:', error.message);
-        }
-    };
+    // const handleLogout = async () => {
+    //     try {
+    //         await logout();
+    //         // Redirect the user to the login page after logging out
+    //         navigate.push('/login');
+    //         console.log('Logout Successful!')
+    //     } catch (error) {
+    //         console.error('Error logging out:', error.message);
+    //     }
+    // };
 
     return (
         <div className="container mx-auto mt-10">
-            <h2 className="text-2xl font-semibold mb-4">Profile Page</h2>
             {currentUser && (
-                <div className="bg-gray-200 p-4 rounded-lg">
-                    <p>Email: {currentUser.email}</p>
-                    {/* You can display additional user information here */}
-                    <Link to="/app" className="text-blue-500 hover:underline mt-2 block">Back to Homepage</Link>
-                    <button onClick={handleLogout} className="text-red-500 hover:underline mt-2 block">Logout</button>
+                <div className="profile-card"> {/* Updated className */}
+                    <h2 className="text-2xl font-semibold mb-4">Profile Page</h2>
+                    <ProfilePicture /> {/* Render the ProfilePicture component */}
+                    <div className="profile-info">
+                        <p>Email: {currentUser.email}</p>
+                        {/* You can display additional user information here */}
+                    </div>
+                    <div className="profile-links">
+                        <Link to="/app" className="text-blue-500 hover:underline">Back to Homepage</Link>
+                        <button onClick={() => { doSignOut().then(() => { navigate('/login') }) }} className="logout-btn">Logout</button>
+                    </div>
                 </div>
             )}
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect,  useContext } from "react";
 import { auth } from "../../firebase/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { GoogleAuthProvider } from "firebase/auth";
 
 const AuthContext = React.createContext();
 
@@ -12,37 +13,42 @@ export function AuthProvider({ children }){
     const [currentUser, setCurrentUser] = useState(null);
     const [userLoggedIn, setUserLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isGoogleUser, setIsGoogleUser] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, initializeUser);
         return unsubscribe;
     }, [])
 
-    async function initializeUser(user){
-        if(user){
-            setCurrentUser({...user});
-            setUserLoggedIn(true);
-        } else{
-            setCurrentUser(null);
-            setUserLoggedIn(false);
+    async function initializeUser(user) {
+        if (user) {
+          // Retrieve the user's name if available
+          const { displayName } = user;
+    
+          // Update the currentUser state with the user's name
+          setCurrentUser({ ...user, displayName });
+    
+          // check if the auth provider is google or not
+          const isGoogle = user.providerData.some(
+            (provider) => provider.providerId === GoogleAuthProvider.PROVIDER_ID
+          );
+          setIsGoogleUser(isGoogle);
+    
+          setUserLoggedIn(true);
+        } else {
+          setCurrentUser(null);
+          setUserLoggedIn(false);
         }
+    
         setLoading(false);
-    }
-
-    async function logout() {
-        try {
-            await signOut(auth);
-        } catch (error) {
-            console.error("Error logging out:", error.message);
-        }
-    }
+      }
 
     const value = {
-        currentUser,
         userLoggedIn,
-        loading,
-        logout,
-    }
+        isGoogleUser,
+        currentUser,
+        setCurrentUser
+      };
 
     return (
         <AuthContext.Provider value={value}>

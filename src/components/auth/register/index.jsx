@@ -19,9 +19,22 @@ const Register = () => {
         e.preventDefault()
         if(!isRegistering) {
             setIsRegistering(true)
-            await doCreateUserWithEmailAndPassword(email, password)
+            try {
+                // Check if passwords match
+                if (password !== confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+
+                await doCreateUserWithEmailAndPassword(email, password);
+                console.log('Registration successful');
+                navigate('/login');
+            } catch (error) {
+                setErrorMessage(error.message);
+            } finally {
+                setIsRegistering(false);
+            }
         }
-    }
+    };
 
     return (
         <>
